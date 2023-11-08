@@ -1,8 +1,12 @@
+import 'package:employees_assignment_flutter/blocs/Employees_Bloc/employees_states.dart';
 import 'package:employees_assignment_flutter/models/employee.dart';
 
 abstract class EmployeesEvent{}
 
-class FetchEmployeesEvent extends EmployeesEvent{}
+class FetchEmployeesEvent extends EmployeesEvent{
+  Operation? operation;
+  FetchEmployeesEvent({this.operation});
+}
 
 class AddEmployeeEvent extends EmployeesEvent{
   Employee employee;

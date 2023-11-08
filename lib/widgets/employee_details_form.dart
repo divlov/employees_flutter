@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:employees_assignment_flutter/blocs/Employees_Bloc/employees_bloc.dart';
 import 'package:employees_assignment_flutter/blocs/Employees_Bloc/employees_events.dart';
+import 'package:employees_assignment_flutter/extensions/extensions.dart';
 import 'package:employees_assignment_flutter/models/custom_icons.dart';
 import 'package:employees_assignment_flutter/models/employee.dart';
+import 'package:employees_assignment_flutter/theme/themes.dart';
 import 'package:employees_assignment_flutter/widgets/action_item_modal_bottom_sheet.dart';
 import 'package:employees_assignment_flutter/widgets/blue_text_button.dart';
 import 'package:employees_assignment_flutter/widgets/calendar.dart';
@@ -15,7 +17,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 class EmployeeDetailsForm extends StatefulWidget {
-  EmployeeDetailsForm({super.key});
+  Employee? employee;
+
+  EmployeeDetailsForm({super.key, this.employee});
 
   @override
   State<EmployeeDetailsForm> createState() => _EmployeeDetailsFormState();
@@ -39,6 +43,26 @@ class _EmployeeDetailsFormState extends State<EmployeeDetailsForm> {
   DateTime _selectedFromDay = DateTime.now();
   EmployeeRole? _selectedEmployeeRole;
   DateTime? _selectedTillDay;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    if (widget.employee != null) {
+      nameController.text = widget.employee!.name;
+      _selectedEmployeeRole = widget.employee!.employeeRole;
+      roleController.text = getEmployeeRoleString(_selectedEmployeeRole!);
+      _selectedFromDay = widget.employee!.fromDate;
+      fromDateController.text = _selectedFromDay.day == DateTime.now().day
+          ? "Today"
+          : DateFormat(Themes.dateFormatStyle).format(_selectedFromDay);
+      _selectedTillDay = widget.employee!.tillDate;
+      if (_selectedTillDay != null) {
+        tillDateController.text =
+            DateFormat(Themes.dateFormatStyle).format(_selectedTillDay!);
+      }
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -187,11 +211,20 @@ class _EmployeeDetailsFormState extends State<EmployeeDetailsForm> {
       // Invalid!
       return;
     }
-    BlocProvider.of<EmployeesBloc>(context).add(AddEmployeeEvent(Employee(
-        name: nameController.text,
-        employeeRole: _selectedEmployeeRole!,
-        fromDate: _selectedFromDay,
-        tillDate: _selectedTillDay)));
+    if (widget.employee == null) {
+      BlocProvider.of<EmployeesBloc>(context).add(AddEmployeeEvent(Employee(
+          name: nameController.text.capitalizeAllWords(),
+          employeeRole: _selectedEmployeeRole!,
+          fromDate: _selectedFromDay,
+          tillDate: _selectedTillDay)));
+    } else {
+      BlocProvider.of<EmployeesBloc>(context).add(ModifyEmployeeEvent(Employee(
+          id: widget.employee!.id,
+          name: nameController.text,
+          employeeRole: _selectedEmployeeRole!,
+          fromDate: _selectedFromDay,
+          tillDate: _selectedTillDay)));
+    }
   }
 
   Future<void> handleFromDateTap(BuildContext context) async {
@@ -209,7 +242,7 @@ class _EmployeeDetailsFormState extends State<EmployeeDetailsForm> {
         fromDateController.text = "Today";
       } else {
         fromDateController.text =
-            DateFormat("d MMM y").format(_selectedFromDay);
+            DateFormat(Themes.dateFormatStyle).format(_selectedFromDay);
       }
     }
   }
@@ -229,7 +262,7 @@ class _EmployeeDetailsFormState extends State<EmployeeDetailsForm> {
         tillDateController.text = "Today";
       } else {
         tillDateController.text =
-            DateFormat("d MMM y").format(_selectedTillDay!);
+            DateFormat(Themes.dateFormatStyle).format(_selectedTillDay!);
       }
     } else {
       tillDateController.clear();

@@ -33,6 +33,7 @@ class DBHelper {
     final sqlDB = await _database();
     String role = getEmployeeRoleString(employee.employeeRole);
     final data = {
+      if (employee.id != null) "id": employee.id,
       "name": employee.name,
       "role": role,
       "from_date": employee.fromDate.toIso8601String(),
@@ -77,8 +78,6 @@ class DBHelper {
     for (var map in listOfMapsOfEmployeeData) {
       employees.add(Employee.fromMap(map));
     }
-    log("$listOfMapsOfEmployeeData", name: "DBHelper");
-    log("$employees", name: "DBHelper");
     return employees;
   }
 }

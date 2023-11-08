@@ -1,5 +1,6 @@
-import 'package:employees_assignment_flutter/extensions/date_time_extensions.dart';
+import 'package:employees_assignment_flutter/extensions/extensions.dart';
 import 'package:employees_assignment_flutter/models/custom_icons.dart';
+import 'package:employees_assignment_flutter/theme/themes.dart';
 import 'package:employees_assignment_flutter/widgets/blue_text_button.dart';
 import 'package:employees_assignment_flutter/widgets/divider_screen_width.dart';
 import 'package:employees_assignment_flutter/widgets/light_blue_secondary_text_button.dart';
@@ -160,7 +161,7 @@ class _CalendarState extends State<Calendar> {
                                 Icon(CustomIcons.calendar,
                                     color: Theme.of(context).primaryColor),
                                 const SizedBox(width: 5),
-                                Text(DateFormat("d MMM y")
+                                Text(DateFormat(Themes.dateFormatStyle)
                                     .format(widget.selectedDay)),
                               ],
                             ),

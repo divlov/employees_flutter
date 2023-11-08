@@ -1,5 +1,7 @@
 import 'package:employees_assignment_flutter/blocs/Employees_Bloc/employees_bloc.dart';
 import 'package:employees_assignment_flutter/blocs/Employees_Bloc/employees_events.dart';
+import 'package:employees_assignment_flutter/screens/Edit_Employee/edit_employee_screen.dart';
+import 'package:employees_assignment_flutter/theme/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,13 +9,47 @@ import 'package:intl/intl.dart';
 
 import '../models/employee.dart';
 
-class EmployeesListView extends StatelessWidget {
-  final List<Employee> employees;
+class EmployeesListView extends StatefulWidget {
+  List<Employee> employees;
   final String title;
   final double? listHeight;
-  final GlobalKey<AnimatedListState> listKey = GlobalKey();
+  final BuildContext parentContext;
 
-  EmployeesListView({super.key, required this.employees, required this.title,this.listHeight});
+  EmployeesListView(
+      {super.key,
+      required this.employees,
+      required this.title,
+      required context,
+      this.listHeight})
+      : parentContext = context;
+
+  @override
+  State<EmployeesListView> createState() => _EmployeesListViewState();
+}
+
+class _EmployeesListViewState extends State<EmployeesListView> {
+   GlobalKey<AnimatedListState> listKey = GlobalKey();
+   late final bool isCurrentEmployeesList;
+
+   @override
+  void initState() {
+     if(widget.employees[0].tillDate==null){
+       isCurrentEmployeesList=true;
+     }else if(widget.employees[0].tillDate!.isAfter(DateTime.now())){
+       isCurrentEmployeesList=true;
+     }else {
+       isCurrentEmployeesList = false;
+     }
+    super.initState();
+  }
+
+  @override
+  void didUpdateWidget(covariant EmployeesListView oldWidget) {
+    if(oldWidget.employees.length!=widget.employees.length){
+      listKey=GlobalKey();
+    }
+    super.didUpdateWidget(oldWidget);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,19 +57,27 @@ class EmployeesListView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15,vertical: 15),
-          child: Text(title, style: TextStyle(fontWeight: FontWeight.w500,fontSize: 16,color: Theme.of(context).primaryColor)),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+          child: Text(
+            widget.title,
+            style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 16,
+                color: Theme.of(context).primaryColor),
+          ),
         ),
         SizedBox(
-          height: listHeight,
+          height: widget.listHeight,
           child: AnimatedList(
               key: listKey,
+              physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              initialItemCount: employees.length,
+              initialItemCount: widget.employees.length,
               itemBuilder: (ctx, index, animation) {
-                final employee = employees[index];
+                final employee = widget.employees[index];
                 return Dismissible(
                   key: ValueKey(employee.id),
+                  direction: DismissDirection.endToStart,
                   background: Container(
                     color: const Color(0xFFF34642),
                     alignment: Alignment.centerRight,
@@ -45,15 +89,9 @@ class EmployeesListView extends StatelessWidget {
                     ),
                   ),
                   onDismissed: (dismissDirection) {
-                    bool wantsToDelete = true;
-                    Future.delayed(const Duration(seconds: 3, milliseconds: 20),
-                        () {
-                      if (wantsToDelete) {
-                        BlocProvider.of<EmployeesBloc>(context)
-                            .add(DeleteEmployeeEvent(employee.id!));
-                      }
-                    });
-                    final deletedItem = employees.removeAt(index);
+                    BlocProvider.of<EmployeesBloc>(context)
+                        .add(DeleteEmployeeEvent(employee.id!));
+                    final deletedItem = widget.employees.removeAt(index);
                     listKey.currentState!
                         .removeItem(index, (context, animation) => Container());
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -65,9 +103,10 @@ class EmployeesListView extends StatelessWidget {
                       action: SnackBarAction(
                         label: 'Undo',
                         onPressed: () {
-                          wantsToDelete = false;
-                          employees.insert(index, deletedItem);
-                          listKey.currentState!.insertItem(index);
+                          BlocProvider.of<EmployeesBloc>(widget.parentContext)
+                              .add(AddEmployeeEvent(deletedItem));
+                          widget.employees.insert(index, deletedItem);
+                          listKey.currentState?.insertItem(index);
                           HapticFeedback.selectionClick();
                         },
                       ),
@@ -80,40 +119,47 @@ class EmployeesListView extends StatelessWidget {
                   },
                   child: SizeTransition(
                     sizeFactor: animation,
-                    child: DecoratedBox(
-                      decoration: const BoxDecoration(color: Colors.white),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ListTile(
-                            title: Text(
-                              employee.name,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 6),
-                                  child: Text(
-                                    getEmployeeRoleString(employee.employeeRole),
+                    child: InkWell(
+                      onTap: (){
+                        Navigator.of(context).push(MaterialPageRoute(builder: (ctx)=>EditEmployeeScreen(employee: employee)));
+                      },
+                      child: DecoratedBox(
+                        decoration: const BoxDecoration(color: Colors.white),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            ListTile(
+                              title: Text(
+                                employee.name,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 6),
+                                    child: Text(
+                                      getEmployeeRoleString(
+                                          employee.employeeRole),
+                                      style: TextStyle(
+                                          color: Theme.of(context).hintColor),
+                                    ),
+                                  ),
+                                  Text( isCurrentEmployeesList?
+                                    "From ${DateFormat(Themes.dateFormatStyle).format(employee.fromDate)}":
+                                    "${DateFormat(Themes.dateFormatStyle).format(employee.fromDate)} - ${DateFormat(Themes.dateFormatStyle).format(employee.tillDate!)}",
                                     style: TextStyle(
+                                        fontSize: 12,
                                         color: Theme.of(context).hintColor),
                                   ),
-                                ),
-                                Text(
-                                  "From ${DateFormat("d MMM y").format(employee.fromDate)}",
-                                  style:  TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context).hintColor),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          if (index != employees.length - 1)
-                            const Divider(height: 1),
-                        ],
+                            if (index != widget.employees.length - 1)
+                              const Divider(height: 1),
+                          ],
+                        ),
                       ),
                     ),
                   ),

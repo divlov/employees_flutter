@@ -1,4 +1,4 @@
-import 'package:employees_assignment_flutter/helpers/db_helper.dart';
+import 'package:employees_assignment_flutter/repositories/db_helper.dart';
 
 enum EmployeeRole { productDesigner, flutterDeveloper, qaTester, productOwner }
 

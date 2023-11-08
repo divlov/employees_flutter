@@ -1,18 +1,20 @@
 import 'package:bloc/bloc.dart';
 import 'package:employees_assignment_flutter/blocs/Employees_Bloc/employees_events.dart';
 import 'package:employees_assignment_flutter/blocs/Employees_Bloc/employees_states.dart';
-import 'package:employees_assignment_flutter/helpers/db_helper.dart';
 import 'package:employees_assignment_flutter/models/employee.dart';
+import 'package:employees_assignment_flutter/repositories/db_helper.dart';
 
 class EmployeesBloc extends Bloc<EmployeesEvent, EmployeeState> {
   EmployeesBloc() : super(EmployeesInitialState()) {
     on<FetchEmployeesEvent>((event, emit) async {
-      emit(EmployeesLoadingState());
+      // not emitting loading state since loading from local db is fairly quick
+      // emit(EmployeesLoadingState());
+      final operation=event.operation??Operation.fetch;
       try {
         final List<Employee> employees = await DBHelper.getInstance().getData();
         final List<Employee> previousEmployees=[];
         if (employees.isEmpty) {
-          emit(ZeroEmployeesState(currentEmployees: [], previousEmployees: []));
+          emit(ZeroEmployeesState(currentEmployees: [], previousEmployees: [],operation: operation));
         } else {
           final currentEmployees = employees.where((employee) {
            if(employee.tillDate == null) {
@@ -26,7 +28,7 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeeState> {
             }
           }).toList();
           emit(EmployeesSuccessState(currentEmployees: currentEmployees,
-              previousEmployees: previousEmployees));
+              previousEmployees: previousEmployees,operation: operation));
         }
       } catch (e) {
         emit(EmployeesErrorState("Some error occurred"));
@@ -36,37 +38,37 @@ class EmployeesBloc extends Bloc<EmployeesEvent, EmployeeState> {
     add(FetchEmployeesEvent());
 
     on<AddEmployeeEvent>((event, emit) async {
-      emit(EmployeesLoadingState());
+      // emit(EmployeesLoadingState());
       try {
         await DBHelper.getInstance().insert(event.employee);
       } catch (e) {
         emit(EmployeesErrorState("Some error occurred"));
       } finally {
-        add(FetchEmployeesEvent());
+        add(FetchEmployeesEvent(operation: Operation.add));
       }
     });
 
     on<DeleteEmployeeEvent>((event, emit) async {
-      emit(EmployeesLoadingState());
+      // emit(EmployeesLoadingState());
       try {
         await DBHelper.getInstance().remove(event.id);
       } catch (e) {
         emit(EmployeesErrorState("Some error occurred"));
       }
       finally {
-        add(FetchEmployeesEvent());
+        add(FetchEmployeesEvent(operation: Operation.delete));
       }
     });
 
     on<ModifyEmployeeEvent>((event, emit) async {
-      emit(EmployeesLoadingState());
+      // emit(EmployeesLoadingState());
       try {
         await DBHelper.getInstance().update(event.employee);
       } catch (e) {
         emit(EmployeesErrorState("Some error occurred"));
       }
       finally {
-        add(FetchEmployeesEvent());
+        add(FetchEmployeesEvent(operation: Operation.modify));
       }
     });
   }

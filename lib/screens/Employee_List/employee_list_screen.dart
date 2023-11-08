@@ -9,6 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class EmployeeListScreen extends StatelessWidget {
   EmployeeListScreen({super.key});
+  GlobalKey currentEmployeesListKey=GlobalKey();
+  GlobalKey previousEmployeesListKey=GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,8 @@ class EmployeeListScreen extends StatelessWidget {
           return const Center(
             child: CircularProgressIndicator(),
           );
-        } else if (state is ZeroEmployeesState) {
+        }
+        else if (state is ZeroEmployeesState) {
           return Center(
             child: Image.asset(
               'assets/images/not_found.png',
@@ -38,23 +41,25 @@ class EmployeeListScreen extends StatelessWidget {
             ),
           );
         } else if (state is EmployeesSuccessState) {
-          return LayoutBuilder(
-            builder: (ctx, constraint) => Column(
+          return SingleChildScrollView(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (state.currentEmployees.isNotEmpty)
                   EmployeesListView(
+                    key: currentEmployeesListKey,
                       employees: state.currentEmployees,
                       title: "Current Employees",
-                  listHeight: constraint.maxHeight * 0.38,),
+                  context: context,),
                 if (state.previousEmployees.isNotEmpty)
                   EmployeesListView(
+                    key: previousEmployeesListKey,
                       employees: state.previousEmployees,
                       title: "Previous Employees",
-                  listHeight: constraint.maxHeight * 0.38,),
+                  context: context,),
                 Padding(
                   padding: const EdgeInsets.only(
-                      left: 15.0, right: 15, top: 10,bottom: 20),
+                      left: 15.0, right: 15, top: 10,bottom: 30),
                   child: Text(
                     'Swipe left to delete',
                     style: TextStyle(color: Theme.of(context).hintColor),
@@ -63,7 +68,7 @@ class EmployeeListScreen extends StatelessWidget {
               ],
             ),
           );
-        } else {
+        } else if(state is EmployeesErrorState) {
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -80,6 +85,8 @@ class EmployeeListScreen extends StatelessWidget {
                   })
             ],
           );
+        } else{
+          return const SizedBox();
         }
       }),
     );
