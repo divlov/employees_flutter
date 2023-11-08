@@ -7,12 +7,19 @@ extension DateTimeExtension on DateTime {
     );
   }
 }
+
 extension StringExtensions on String {
   String capitalize() {
     return "${this[0].toUpperCase()}${substring(1)}";
   }
 
   String capitalizeAllWords() {
-    return split(' ').map((word) => word.capitalize()).join(' ');
+    return split(' ').map((word) {
+      if (word.isNotEmpty) {
+        return word.capitalize();
+      } else {
+        return "";
+      }
+    }).join(' ');
   }
 }

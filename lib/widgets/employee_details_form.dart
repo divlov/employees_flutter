@@ -213,7 +213,7 @@ class _EmployeeDetailsFormState extends State<EmployeeDetailsForm> {
     }
     if (widget.employee == null) {
       BlocProvider.of<EmployeesBloc>(context).add(AddEmployeeEvent(Employee(
-          name: nameController.text.capitalizeAllWords(),
+          name: nameController.text.trim().capitalizeAllWords(),
           employeeRole: _selectedEmployeeRole!,
           fromDate: _selectedFromDay,
           tillDate: _selectedTillDay)));
