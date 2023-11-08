@@ -87,6 +87,7 @@ class _EmployeeDetailsFormState extends State<EmployeeDetailsForm> {
                   prefixIcon: const Icon(Icons.person_outlined),
                   prefixIconColor: Theme.of(context).colorScheme.primary,
                 ),
+                textCapitalization: TextCapitalization.words,
                 validator: (text) {
                   if (text!.isEmpty) {
                     return "Please enter name";
