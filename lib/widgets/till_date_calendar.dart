@@ -25,7 +25,7 @@ class _TillDateCalendarState extends State<TillDateCalendar> {
   @override
   void initState() {
     // TODO: implement initState
-    focusedDay = widget.firstDay;
+    focusedDay = widget.selectedDay??widget.firstDay;
     super.initState();
   }
 

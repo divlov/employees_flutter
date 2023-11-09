@@ -257,7 +257,7 @@ class _EmployeeDetailsFormState extends State<EmployeeDetailsForm> {
         barrierDismissible: false,
         builder: (ctx) {
           return TillDateCalendar(
-            firstDay: _selectedTillDay ?? _selectedFromDay,
+            firstDay: _selectedFromDay,
             selectedDay: _selectedTillDay,
           );
         });
