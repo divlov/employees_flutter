@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:employees_assignment_flutter/blocs/Employees_Bloc/employees_bloc.dart';
 import 'package:employees_assignment_flutter/blocs/Employees_Bloc/employees_events.dart';
-import 'package:employees_assignment_flutter/extensions/extensions.dart';
 import 'package:employees_assignment_flutter/models/custom_icons.dart';
 import 'package:employees_assignment_flutter/models/employee.dart';
 import 'package:employees_assignment_flutter/theme/themes.dart';
@@ -212,9 +211,11 @@ class _EmployeeDetailsFormState extends State<EmployeeDetailsForm> {
       // Invalid!
       return;
     }
-    if (widget.employee == null) {
+
+    //checking if form has been called for adding or modifying an employee
+    if (widget.employee == null) { // called for adding employee since no employee has been passed
       BlocProvider.of<EmployeesBloc>(context).add(AddEmployeeEvent(Employee(
-          name: nameController.text.trim().capitalizeAllWords(),
+          name: nameController.text.trim(),
           employeeRole: _selectedEmployeeRole!,
           fromDate: _selectedFromDay,
           tillDate: _selectedTillDay)));
@@ -249,24 +250,31 @@ class _EmployeeDetailsFormState extends State<EmployeeDetailsForm> {
   }
 
   Future<void> handleTillDateTap(BuildContext context) async {
-    _selectedTillDay = await showDialog(
+    //selectedDay="no date" if user presses save with no date on calendar
+    //otherwise = DateTime
+    final selectedDay = await showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) {
           return TillDateCalendar(
-            firstDay: _selectedFromDay,
+            firstDay: _selectedTillDay ?? _selectedFromDay,
             selectedDay: _selectedTillDay,
           );
         });
-    if (_selectedTillDay != null) {
-      if (_selectedTillDay!.day == DateTime.now().day) {
-        tillDateController.text = "Today";
-      } else {
-        tillDateController.text =
-            DateFormat(Themes.dateFormatStyle).format(_selectedTillDay!);
+    if (selectedDay != null) { //user did not press cancel
+      if(selectedDay is DateTime) {
+        _selectedTillDay = selectedDay;
+        if (_selectedTillDay!.day == DateTime.now().day) {
+          tillDateController.text = "Today";
+        } else{
+          tillDateController.text =
+              DateFormat(Themes.dateFormatStyle).format(_selectedTillDay!);
+        }
       }
-    } else {
-      tillDateController.clear();
+      else { // user saved "no date"
+        _selectedTillDay=null;
+        tillDateController.clear();
+      }
     }
   }
 

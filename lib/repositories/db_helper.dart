@@ -62,8 +62,7 @@ class DBHelper {
       "name": employee.name,
       "role": role,
       "from_date": employee.fromDate.toIso8601String(),
-      if (employee.tillDate != null)
-        "till_date": employee.tillDate!.toIso8601String(),
+      "till_date": employee.tillDate?.toIso8601String(),
     };
     return await sqlDB
         .update(tableName, data, where: 'id = ?', whereArgs: [employee.id]);

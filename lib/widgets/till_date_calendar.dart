@@ -156,7 +156,7 @@ class _TillDateCalendarState extends State<TillDateCalendar> {
                             BlueTextButton(
                                 text: 'Save',
                                 onPressed: () {
-                                  Navigator.of(context).pop(widget.selectedDay);
+                                  Navigator.of(context).pop(widget.selectedDay??"No date");
                                 })
                           ],
                         ),
