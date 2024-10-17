@@ -1,4 +1,4 @@
-# employees_assignment_flutter
+# employees_flutter
 
 A new Flutter project.
 
